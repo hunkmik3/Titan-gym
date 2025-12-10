@@ -1,7 +1,7 @@
 "use client";
 
 import useSWR from "swr";
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 type MemberStatus = "active" | "inactive" | "overdue";
 
@@ -107,6 +107,18 @@ export default function Home() {
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const cameraInputRef = useRef<HTMLInputElement | null>(null);
+
+  useEffect(() => {
+    // Lock background scroll when modal open
+    if (isModalOpen) {
+      const original = document.body.style.overflow;
+      document.body.style.overflow = "hidden";
+      return () => {
+        document.body.style.overflow = original;
+      };
+    }
+    return;
+  }, [isModalOpen]);
 
   const filtered = useMemo(() => {
     return members.filter((m) => {
