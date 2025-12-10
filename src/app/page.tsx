@@ -75,6 +75,13 @@ const getDaysRemaining = (dateStr?: string) => {
   return diffDays;
 };
 
+const getDaysRemainingInfo = (dateStr?: string) => {
+  const days = getDaysRemaining(dateStr);
+  const label = days === "" ? "" : `${days} ngày`;
+  const overdue = typeof days === "number" && days < 0;
+  return { days, label, overdue };
+};
+
 export default function Home() {
   const { data: members = [], isLoading, mutate } = useSWR<Member[]>(
     "/api/members",
@@ -362,83 +369,83 @@ export default function Home() {
                 <div className="col-span-1">Trạng thái</div>
                 <div className="col-span-2 text-right">Check-in tháng</div>
               </div>
-              {(isLoading ? [] : filtered).map((member) => (
-                <div
-                  key={member.id}
-                  className="grid grid-cols-12 items-center px-4 py-3 text-sm transition hover:bg-blue-50/50"
-                >
-                  <div className="col-span-4 flex items-center gap-3">
-                    <div className="relative h-10 w-10 flex-shrink-0 overflow-hidden rounded-full border-2 border-blue-200 bg-gradient-to-br from-blue-50 to-indigo-50">
-                      {member.avatarUrl ? (
-                        <img
-                          src={member.avatarUrl}
-                          alt={member.name}
-                          className="h-full w-full object-cover"
-                        />
-                      ) : (
-                        <div className="flex h-full w-full items-center justify-center text-lg text-blue-400">
-                          👤
-                        </div>
-                      )}
+              {(isLoading ? [] : filtered).map((member) => {
+                const { label: daysLabel, overdue } = getDaysRemainingInfo(
+                  member.nextPayment
+                );
+                return (
+                  <div
+                    key={member.id}
+                    className="grid grid-cols-12 items-center px-4 py-3 text-sm transition hover:bg-blue-50/50"
+                  >
+                    <div className="col-span-4 flex items-center gap-3">
+                      <div className="relative h-10 w-10 flex-shrink-0 overflow-hidden rounded-full border-2 border-blue-200 bg-gradient-to-br from-blue-50 to-indigo-50">
+                        {member.avatarUrl ? (
+                          <img
+                            src={member.avatarUrl}
+                            alt={member.name}
+                            className="h-full w-full object-cover"
+                          />
+                        ) : (
+                          <div className="flex h-full w-full items-center justify-center text-lg text-blue-400">
+                            👤
+                          </div>
+                        )}
+                      </div>
+                      <div className="space-y-1">
+                        <p className="font-semibold text-slate-900">
+                          {member.name}
+                        </p>
+                        <p className="text-xs text-slate-600">{member.phone}</p>
+                        <p className="text-xs text-slate-500">{member.email}</p>
+                      </div>
                     </div>
-                    <div className="space-y-1">
-                      <p className="font-semibold text-slate-900">
-                        {member.name}
+                    <div className="col-span-2">
+                      <p className="text-sm font-medium text-slate-800">
+                        {member.plan}
                       </p>
-                      <p className="text-xs text-slate-600">{member.phone}</p>
-                      <p className="text-xs text-slate-500">{member.email}</p>
+                    </div>
+                    <div className="col-span-2">
+                      <p className="text-sm font-medium text-slate-800">
+                        {formatDateDisplay(member.nextPayment)}
+                      </p>
+                    </div>
+                    <div className="col-span-1 text-right">
+                      <p
+                        className={`text-sm font-semibold ${
+                          overdue ? "text-red-600" : "text-slate-800"
+                        }`}
+                      >
+                        {daysLabel}
+                      </p>
+                    </div>
+                    <div className="col-span-1">
+                      <span
+                        className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${statusStyle[member.status].className}`}
+                      >
+                        {statusStyle[member.status].label}
+                      </span>
+                    </div>
+                    <div className="col-span-2 flex items-center justify-end gap-2 text-right">
+                      <span className="font-semibold text-slate-900">
+                        {member.checkinsThisMonth}
+                      </span>
+                      <button
+                        onClick={() => handleEdit(member)}
+                        className="rounded-lg border border-blue-200 px-2 py-1 text-xs font-semibold text-blue-700 transition hover:bg-blue-50"
+                      >
+                        Sửa
+                      </button>
+                      <button
+                        onClick={() => handleDelete(member.id)}
+                        className="rounded-lg border border-red-200 px-2 py-1 text-xs font-semibold text-red-600 transition hover:bg-red-50"
+                      >
+                        Xóa
+                      </button>
                     </div>
                   </div>
-                  <div className="col-span-2">
-                    <p className="text-sm font-medium text-slate-800">
-                      {member.plan}
-                    </p>
-                  </div>
-                  <div className="col-span-2">
-                    <p className="text-sm font-medium text-slate-800">
-                      {formatDateDisplay(member.nextPayment)}
-          </p>
-        </div>
-                  <div className="col-span-1 text-right">
-                    <p
-                      className={`text-sm font-semibold ${
-                        typeof getDaysRemaining(member.nextPayment) === "number" &&
-                        getDaysRemaining(member.nextPayment) < 0
-                          ? "text-red-600"
-                          : "text-slate-800"
-                      }`}
-                    >
-                      {getDaysRemaining(member.nextPayment) === ""
-                        ? ""
-                        : `${getDaysRemaining(member.nextPayment)} ngày`}
-                    </p>
-                  </div>
-                  <div className="col-span-1">
-                    <span
-                      className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${statusStyle[member.status].className}`}
-                    >
-                      {statusStyle[member.status].label}
-                    </span>
-                  </div>
-                <div className="col-span-2 flex items-center justify-end gap-2 text-right">
-                  <span className="font-semibold text-slate-900">
-                    {member.checkinsThisMonth}
-                  </span>
-                  <button
-                    onClick={() => handleEdit(member)}
-                    className="rounded-lg border border-blue-200 px-2 py-1 text-xs font-semibold text-blue-700 transition hover:bg-blue-50"
-                  >
-                    Sửa
-                  </button>
-                  <button
-                    onClick={() => handleDelete(member.id)}
-                    className="rounded-lg border border-red-200 px-2 py-1 text-xs font-semibold text-red-600 transition hover:bg-red-50"
-                  >
-                    Xóa
-                  </button>
-                  </div>
-                </div>
-              ))}
+                );
+              })}
               {filtered.length === 0 && !isLoading && (
                 <div className="px-4 py-6 text-sm text-slate-600">
                   Chưa có dữ liệu hội viên.
@@ -447,73 +454,75 @@ export default function Home() {
             </div>
 
             <div className="grid gap-3 p-3 sm:hidden">
-              {(isLoading ? [] : filtered).map((member) => (
-                <div
-                  key={member.id}
-                  className="space-y-2 rounded-2xl border border-zinc-100 bg-white p-4 shadow-sm"
-                >
-                  <div className="flex items-center justify-between gap-2">
-                    <div className="flex items-center gap-3">
-                      <div className="relative h-12 w-12 flex-shrink-0 overflow-hidden rounded-full border-2 border-blue-200 bg-gradient-to-br from-blue-50 to-indigo-50">
-                        {member.avatarUrl ? (
-                          <img
-                            src={member.avatarUrl}
-                            alt={member.name}
-                            className="h-full w-full object-cover"
-                          />
-                        ) : (
-                          <div className="flex h-full w-full items-center justify-center text-xl text-blue-400">
-                            👤
-                          </div>
-                        )}
+              {(isLoading ? [] : filtered).map((member) => {
+                const { label: daysLabel } = getDaysRemainingInfo(
+                  member.nextPayment
+                );
+                return (
+                  <div
+                    key={member.id}
+                    className="space-y-2 rounded-2xl border border-zinc-100 bg-white p-4 shadow-sm"
+                  >
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-3">
+                        <div className="relative h-12 w-12 flex-shrink-0 overflow-hidden rounded-full border-2 border-blue-200 bg-gradient-to-br from-blue-50 to-indigo-50">
+                          {member.avatarUrl ? (
+                            <img
+                              src={member.avatarUrl}
+                              alt={member.name}
+                              className="h-full w-full object-cover"
+                            />
+                          ) : (
+                            <div className="flex h-full w-full items-center justify-center text-xl text-blue-400">
+                              👤
+                            </div>
+                          )}
+                        </div>
+                        <div>
+                          <p className="font-semibold text-slate-900">
+                            {member.name}
+                          </p>
+                          <p className="text-xs text-slate-600">{member.phone}</p>
+                        </div>
                       </div>
-                      <div>
-                        <p className="font-semibold text-slate-900">
-                          {member.name}
-                        </p>
-                        <p className="text-xs text-slate-600">{member.phone}</p>
-                      </div>
+                      <span
+                        className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${statusStyle[member.status].className}`}
+                      >
+                        {statusStyle[member.status].label}
+                      </span>
                     </div>
-                    <span
-                      className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${statusStyle[member.status].className}`}
-                    >
-                      {statusStyle[member.status].label}
-                    </span>
+                    <p className="text-sm text-slate-700">{member.plan}</p>
+                    <div className="flex flex-wrap items-center gap-3 text-xs text-slate-600">
+                      <span className="rounded-full bg-blue-50 px-2.5 py-1 font-semibold text-blue-700">
+                        Thanh toán kế: {formatDateDisplay(member.nextPayment)}
+                      </span>
+                      <span className="rounded-full bg-indigo-50 px-2.5 py-1 font-semibold text-indigo-700">
+                        Còn lại: {daysLabel}
+                      </span>
+                      <span className="rounded-full bg-green-50 px-2.5 py-1 font-semibold text-green-700">
+                        Check-in tháng: {member.checkinsThisMonth}
+                      </span>
+                    </div>
+                    {member.notes && (
+                      <p className="text-xs text-slate-500">Ghi chú: {member.notes}</p>
+                    )}
+                    <div className="flex gap-2 pt-1">
+                      <button
+                        onClick={() => handleEdit(member)}
+                        className="flex-1 rounded-lg border border-blue-200 px-3 py-2 text-xs font-semibold text-blue-700 transition hover:bg-blue-50"
+                      >
+                        Sửa
+                      </button>
+                      <button
+                        onClick={() => handleDelete(member.id)}
+                        className="flex-1 rounded-lg border border-red-200 px-3 py-2 text-xs font-semibold text-red-600 transition hover:bg-red-50"
+                      >
+                        Xóa
+                      </button>
+                    </div>
                   </div>
-                  <p className="text-sm text-slate-700">{member.plan}</p>
-                  <div className="flex flex-wrap items-center gap-3 text-xs text-slate-600">
-                    <span className="rounded-full bg-blue-50 px-2.5 py-1 font-semibold text-blue-700">
-                      Thanh toán kế: {formatDateDisplay(member.nextPayment)}
-                    </span>
-                    <span className="rounded-full bg-indigo-50 px-2.5 py-1 font-semibold text-indigo-700">
-                      Còn lại:{" "}
-                      {getDaysRemaining(member.nextPayment) === ""
-                        ? ""
-                        : `${getDaysRemaining(member.nextPayment)} ngày`}
-                    </span>
-                    <span className="rounded-full bg-green-50 px-2.5 py-1 font-semibold text-green-700">
-                      Check-in tháng: {member.checkinsThisMonth}
-                    </span>
-                  </div>
-                  {member.notes && (
-                    <p className="text-xs text-slate-500">Ghi chú: {member.notes}</p>
-                  )}
-                  <div className="flex gap-2 pt-1">
-                    <button
-                      onClick={() => handleEdit(member)}
-                      className="flex-1 rounded-lg border border-blue-200 px-3 py-2 text-xs font-semibold text-blue-700 transition hover:bg-blue-50"
-                    >
-                      Sửa
-                    </button>
-                    <button
-                      onClick={() => handleDelete(member.id)}
-                      className="flex-1 rounded-lg border border-red-200 px-3 py-2 text-xs font-semibold text-red-600 transition hover:bg-red-50"
-                    >
-                      Xóa
-                    </button>
-                  </div>
-                </div>
-              ))}
+                );
+              })}
               {filtered.length === 0 && !isLoading && (
                 <div className="rounded-2xl border border-dashed border-blue-200 bg-blue-50/50 p-4 text-center text-sm text-slate-600">
                   Chưa có dữ liệu hội viên.
