@@ -535,7 +535,7 @@ export default function Home() {
 
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 backdrop-blur-sm sm:items-center">
-          <div className="w-full max-w-lg rounded-3xl bg-white p-6 shadow-2xl ring-1 ring-blue-100 sm:m-6">
+          <div className="mx-3 my-6 w-full max-w-lg rounded-3xl bg-white p-6 shadow-2xl ring-1 ring-blue-100 sm:m-6 sm:max-h-[80vh] max-h-[90vh] overflow-y-auto overscroll-contain">
             <div className="flex items-start justify-between">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-wide text-blue-600">
