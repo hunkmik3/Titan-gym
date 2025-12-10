@@ -1,7 +1,7 @@
 "use client";
 
 import useSWR from "swr";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 
 type MemberStatus = "active" | "inactive" | "overdue";
 
@@ -107,18 +107,6 @@ export default function Home() {
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const cameraInputRef = useRef<HTMLInputElement | null>(null);
-
-  useEffect(() => {
-    // Lock background scroll when modal open
-    if (isModalOpen) {
-      const original = document.body.style.overflow;
-      document.body.style.overflow = "hidden";
-      return () => {
-        document.body.style.overflow = original;
-      };
-    }
-    return;
-  }, [isModalOpen]);
 
   const filtered = useMemo(() => {
     return members.filter((m) => {
@@ -546,8 +534,8 @@ export default function Home() {
       </main>
 
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/50 backdrop-blur-sm">
-          <div className="w-full max-w-lg mx-3 mt-6 mb-10 sm:mx-0 sm:mt-12 rounded-3xl bg-white p-6 shadow-2xl ring-1 ring-blue-100 max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 backdrop-blur-sm sm:items-center">
+          <div className="w-full max-w-lg rounded-3xl bg-white p-6 shadow-2xl ring-1 ring-blue-100 sm:m-6 max-h-[80vh] overflow-y-auto">
             <div className="flex items-start justify-between">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-wide text-blue-600">
