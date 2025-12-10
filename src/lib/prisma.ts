@@ -2,7 +2,10 @@ import { PrismaClient } from "@prisma/client";
 import { Pool } from "pg";
 import { PrismaPg } from "@prisma/adapter-pg";
 
-const globalForPrisma = globalThis as unknown as { prisma?: PrismaClient };
+const globalForPrisma = globalThis as unknown as {
+  prisma?: PrismaClient;
+  pool?: Pool;
+};
 
 const connectionString = process.env.DATABASE_URL;
 if (!connectionString) {
@@ -11,16 +14,22 @@ if (!connectionString) {
 
 // Allow self-signed certs (Supabase managed Postgres)
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
-const dbUrl = new URL(connectionString);
-dbUrl.searchParams.delete("sslmode");
 
-const pool = new Pool({
-  connectionString: dbUrl.toString(),
-  ssl: { rejectUnauthorized: false },
-});
+// Reuse a single Pool to avoid exhausting PgBouncer session limits in dev/hot-reload
+const pool =
+  globalForPrisma.pool ??
+  new Pool({
+    connectionString,
+    ssl: { rejectUnauthorized: false },
+    max: 5, // keep pool small for pgBouncer session mode
+  });
+
 const adapter = new PrismaPg(pool);
 
 export const prisma = globalForPrisma.prisma ?? new PrismaClient({ adapter });
 
-if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = prisma;
+if (process.env.NODE_ENV !== "production") {
+  globalForPrisma.prisma = prisma;
+  globalForPrisma.pool = pool;
+}
 
