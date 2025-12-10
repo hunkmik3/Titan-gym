@@ -21,9 +21,13 @@ const pool =
   new Pool({
     connectionString,
     ssl: { rejectUnauthorized: false },
-    max: 1, // keep pool minimal to avoid session pool limits
-    idleTimeoutMillis: 30_000,
+    max: 1, // keep pool minimal for pgBouncer/session mode
+    idleTimeoutMillis: 10_000,
     connectionTimeoutMillis: 5_000,
+    keepAlive: true,
+    // Try to prevent long-running queries
+    statement_timeout: 5_000,
+    query_timeout: 5_000,
   });
 
 const adapter = new PrismaPg(pool);
