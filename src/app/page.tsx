@@ -535,7 +535,7 @@ export default function Home() {
 
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 backdrop-blur-sm sm:items-center">
-          <div className="w-full max-w-lg rounded-3xl bg-white p-6 shadow-2xl ring-1 ring-blue-100 sm:m-6 max-h-[80vh] overflow-y-auto">
+          <div className="w-full max-w-lg rounded-3xl bg-white p-6 shadow-2xl ring-1 ring-blue-100 sm:m-6">
             <div className="flex items-start justify-between">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-wide text-blue-600">
@@ -661,6 +661,19 @@ export default function Home() {
                     <option key={plan}>{plan}</option>
                   ))}
                 </select>
+              </div>
+              <div>
+                <label className="text-sm font-semibold text-slate-800">
+                  Thanh toán kế
+                </label>
+                <input
+                  type="date"
+                  value={form.nextPayment}
+                  onChange={(e) =>
+                    setForm((f) => ({ ...f, nextPayment: e.target.value }))
+                  }
+                  className="mt-1 w-full rounded-xl border border-blue-200 bg-white px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100"
+                />
               </div>
               <div>
                 <label className="text-sm font-semibold text-slate-800">
